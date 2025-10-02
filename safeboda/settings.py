@@ -33,7 +33,14 @@ _hosts = os.environ.get('ALLOWED_HOSTS', '')
 if _hosts:
     ALLOWED_HOSTS = _hosts.split(',')
 else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '.app.github.dev']
+
+# Allow CSRF for Codespaces and local dev
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.app.github.dev',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
 
 
 # Application definition
