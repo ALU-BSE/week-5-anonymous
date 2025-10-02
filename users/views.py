@@ -6,6 +6,10 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from drf_spectacular.utils import extend_schema
+
 
 from users.models import User, Passenger, Rider
 from users.serializers import UserSerializer, PassengerSerializer, RiderSerializer, UserRegistrationSerializer
@@ -172,3 +176,22 @@ class RegisterView(generics.CreateAPIView):
             },
             'message': 'User registered successfully'
         }, status=status.HTTP_201_CREATED)
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Custom token serializer to include user data"""
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = UserSerializer(self.user).data
+        return data
+
+
+class LoginView(TokenObtainPairView):
+    """API endpoint for user login"""
+    serializer_class = CustomTokenObtainPairSerializer
+
+    @extend_schema(
+        summary="User login",
+        description="Authenticate user and receive JWT tokens"
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
