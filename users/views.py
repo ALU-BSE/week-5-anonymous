@@ -14,6 +14,9 @@ from drf_spectacular.utils import extend_schema
 from users.models import User, Passenger, Rider
 from users.serializers import UserSerializer, PassengerSerializer, RiderSerializer, UserRegistrationSerializer
 
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -195,3 +198,30 @@ class LoginView(TokenObtainPairView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+class UserProfileView(APIView):
+    """API endpoint to retrieve and update user profile"""
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Get user profile",
+        description="Retrieve authenticated user's profile"
+    )
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Update user profile",
+        description="Update authenticated user's profile"
+    )
+    def put(self, request):
+        serializer = UserSerializer(
+            request.user, 
+            data=request.data, 
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
